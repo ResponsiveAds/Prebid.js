@@ -12,7 +12,7 @@ import {
 
 
 const BIDDER_CODE = 'responsiveAdsBidAdapter';
-const ENDPOINT_URL = 'https://radprimoz.eu.loclx.io/bid';
+const ENDPOINT_URL = 'https://ve60c4xzl9.execute-api.us-east-1.amazonaws.com/default/fake-prebidjs';
 
 const converter = ortbConverter({
     context: {
@@ -40,13 +40,16 @@ export const spec = {
       data: data,
       options: {
         contentType: 'application/json',
+        withCredentials: false
       },
       bidderRequest
     }]
   },
   interpretResponse: function(response, request) {
     if (response.body) {
-      const bids = converter.fromORTB({ response: response.body, request: request.data }).bids;
+      const res = converter.fromORTB({ response: response.body, request: request.data });
+      const bids = res.bids;
+      logMessage('interpretResponse', bids);
       return bids;
     }
     return [];

@@ -21,6 +21,8 @@
             mediaTypes: {
                 banner: {
                     sizes: [[300, 250]],
+                    battr: [], //if we don't define this we get error check if we can remove this
+                    bcat: [] //if we don't define this we get error check if we can remove this
                 }
             },
 
@@ -29,7 +31,6 @@
                 bidder: 'responsiveAdsBidAdapter',
                 params: {
                     placementId: 13144370,
-                    categories: ['automotive', 'news-and-politics']
                 }
             }]
 
@@ -37,6 +38,14 @@
 
         var pbjs = pbjs || {};
         pbjs.que = pbjs.que || [];
+
+
+        // pbjs.bidderSettings = {
+        //     allowZeroCpmBids: true,
+        //     responsiveAdsBidAdapter: {
+        //         allowZeroCpmBids: true
+        //     }
+        // };
 
     </script>
 
