@@ -7,7 +7,13 @@ import {
   triggerPixel,
   logMessage,
   deepSetValue,
-  getBidIdParameter
+  getBidIdParameter,
+  canAccessWindowTop,
+  getSafeframeGeometry,
+  getWindowSelf,
+  getWindowTop,
+  inIframe,
+  isSafeFrameWindow,
 } from '../src/utils.js';
 
 
@@ -32,8 +38,13 @@ export const spec = {
     return !!(bid.params && bid.params.placementId);
   },
   buildRequests: function(bidRequests, bidderRequest) {
+    console.log('isSafeFrameWindow', isSafeFrameWindow());
+    //we only want to bid if we are not in a safeframe
+    if (isSafeFrameWindow()) {
+      return;
+    }
+
     const data = converter.toORTB({bidRequests, bidderRequest})
-    // you may need to adjust `data` to suit your needs - see "customization" below
     return [{
       method: 'POST',
       url: ENDPOINT_URL,
