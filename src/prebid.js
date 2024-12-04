@@ -39,7 +39,13 @@ import {newMetrics, useMetrics} from './utils/perfMetrics.js';
 import {defer, GreedyPromise} from './utils/promise.js';
 import {enrichFPD} from './fpd/enrichment.js';
 import {allConsent} from './consentHandler.js';
-import {insertLocatorFrame, markBidAsRendered, renderAdDirect, renderIfDeferred} from './adRendering.js';
+import {
+  insertLocatorFrame,
+  markBidAsRendered,
+  markWinningBid,
+  renderAdDirect,
+  renderIfDeferred
+} from './adRendering.js';
 import {getHighestCpm} from './utils/reducers.js';
 import {fillVideoDefaults, validateOrtbVideoFields} from './video.js';
 
@@ -905,7 +911,7 @@ if (FEATURES.VIDEO) {
    *
    * @alias module:pbjs.markWinningBidAsUsed
    */
-  pbjsInstance.markWinningBidAsUsed = function ({adId, adUnitCode}) {
+  pbjsInstance.markWinningBidAsUsed = function ({adId, adUnitCode, analytics = false}) {
     let bids;
     if (adUnitCode && adId == null) {
       bids = targeting.getWinningBids(adUnitCode);
@@ -915,7 +921,11 @@ if (FEATURES.VIDEO) {
       logWarn('Improper use of markWinningBidAsUsed. It needs an adUnitCode or an adId to function.');
     }
     if (bids.length > 0) {
-      auctionManager.addWinningBid(bids[0]);
+      if (analytics) {
+        markWinningBid(bids[0]);
+      } else {
+        auctionManager.addWinningBid(bids[0]);
+      }
       markBidAsRendered(bids[0])
     }
   }
@@ -957,12 +967,12 @@ pbjsInstance.que.push(() => listenMessagesFromCreative());
  * by prebid once it's done loading. If it runs after prebid loads, then this monkey-patch causes their
  * function to execute immediately.
  *
- * @memberof pbjs
  * @param  {function} command A function which takes no arguments. This is guaranteed to run exactly once, and only after
  *                            the Prebid script has been fully loaded.
  * @alias module:pbjs.cmd.push
+ * @alias module:pbjs.que.push
  */
-pbjsInstance.cmd.push = function (command) {
+function quePush(command) {
   if (typeof command === 'function') {
     try {
       command.call();
@@ -972,9 +982,7 @@ pbjsInstance.cmd.push = function (command) {
   } else {
     logError('Commands written into $$PREBID_GLOBAL$$.cmd.push must be wrapped in a function');
   }
-};
-
-pbjsInstance.que.push = pbjsInstance.cmd.push;
+}
 
 function processQueue(queue) {
   queue.forEach(function (cmd) {
@@ -993,6 +1001,7 @@ function processQueue(queue) {
  * @alias module:pbjs.processQueue
  */
 pbjsInstance.processQueue = function () {
+  pbjsInstance.que.push = pbjsInstance.cmd.push = quePush;
   insertLocatorFrame();
   hook.ready();
   processQueue(pbjsInstance.que);

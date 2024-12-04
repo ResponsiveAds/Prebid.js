@@ -137,11 +137,12 @@ export const getRenderingData = hook('sync', function (bidResponse, options) {
   };
 })
 
-export const doRender = hook('sync', function({renderFn, resizeFn, bidResponse, options}) {
-  if (FEATURES.VIDEO && bidResponse.mediaType === VIDEO) {
+export const doRender = hook('sync', function({renderFn, resizeFn, bidResponse, options, doc, isMainDocument = doc === document && !inIframe()}) {
+  const videoBid = (FEATURES.VIDEO && bidResponse.mediaType === VIDEO)
+  if (isMainDocument || videoBid) {
     emitAdRenderFail({
       reason: AD_RENDER_FAILED_REASON.PREVENT_WRITING_ON_MAIN_DOCUMENT,
-      message: 'Cannot render video ad',
+      message: videoBid ? 'Cannot render video ad without a renderer' : `renderAd was prevented from writing to the main document.`,
       bid: bidResponse,
       id: bidResponse.adId
     });
@@ -219,6 +220,10 @@ export function deferRendering(bidResponse, renderFn) {
   if (!bidResponse.deferRendering) {
     renderIfDeferred(bidResponse);
   }
+  markWinner(bidResponse);
+}
+
+export function markWinner(bidResponse) {
   if (!WINNERS.has(bidResponse)) {
     WINNERS.add(bidResponse);
     markWinningBid(bidResponse);
@@ -250,7 +255,7 @@ export function renderAdDirect(doc, adId, options) {
     if (adData.ad) {
       doc.write(adData.ad);
       doc.close();
-      emitAdRenderSucceeded({doc, bid, adId: bid.adId});
+      emitAdRenderSucceeded({doc, bid, id: bid.adId});
     } else {
       getCreativeRenderer(bid)
         .then(render => render(adData, {
@@ -258,7 +263,7 @@ export function renderAdDirect(doc, adId, options) {
           mkFrame: createIframe,
         }, doc.defaultView))
         .then(
-          () => emitAdRenderSucceeded({doc, bid, adId: bid.adId}),
+          () => emitAdRenderSucceeded({doc, bid, id: bid.adId}),
           (e) => {
             fail(e?.reason || AD_RENDER_FAILED_REASON.EXCEPTION, e?.message)
             e?.stack && logError(e);
@@ -273,14 +278,10 @@ export function renderAdDirect(doc, adId, options) {
     if (!adId || !doc) {
       fail(AD_RENDER_FAILED_REASON.MISSING_DOC_OR_ADID, `missing ${adId ? 'doc' : 'adId'}`);
     } else {
-      if ((doc === document && !inIframe())) {
-        fail(AD_RENDER_FAILED_REASON.PREVENT_WRITING_ON_MAIN_DOCUMENT, `renderAd was prevented from writing to the main document.`);
-      } else {
-        getBidToRender(adId).then(bidResponse => {
-          bid = bidResponse;
-          handleRender({renderFn, resizeFn, adId, options: {clickUrl: options?.clickThrough}, bidResponse, doc});
-        });
-      }
+      getBidToRender(adId).then(bidResponse => {
+        bid = bidResponse;
+        handleRender({renderFn, resizeFn, adId, options: {clickUrl: options?.clickThrough}, bidResponse, doc});
+      });
     }
   } catch (e) {
     fail(EXCEPTION, e.message);
