@@ -10,7 +10,7 @@ import {
 
 const BIDDER_VERSION = '1.0';
 const BIDDER_CODE = 'responsiveAds';
-const ENDPOINT_URL = 'https://ve60c4xzl9.execute-api.us-east-1.amazonaws.com/default/fake-prebidjs';
+const ENDPOINT_URL = 'https://ve60c4xzl9.execute-api.us-east-1.amazonaws.com/prod/prebidjs';
 const DEFAULT_CURRENCY = 'USD';
 
 const converter = ortbConverter({
@@ -64,7 +64,6 @@ export const spec = {
     };
   },
   interpretResponse: function(response, request) {
-    console.log('interpretResponse', response, request);
     const res = converter.fromORTB({ response: response.body, request: request.data });
     const bids = res.bids;
     return bids;
