@@ -4,18 +4,34 @@ import { ortbConverter } from '../libraries/ortbConverter/converter.js'
 import {
   logMessage,
   isSafeFrameWindow,
+  mergeDeep,
+  canAccessWindowTop,
 } from '../src/utils.js';
 
-
-const BIDDER_CODE = 'responsiveAdsBidAdapter';
+const BIDDER_VERSION = '1.0';
+const BIDDER_CODE = 'responsiveAds';
 const ENDPOINT_URL = 'https://ve60c4xzl9.execute-api.us-east-1.amazonaws.com/default/fake-prebidjs';
+const DEFAULT_CURRENCY = 'USD';
 
 const converter = ortbConverter({
-    context: {
-        mediaType: BANNER,
-        netRevenue: true,
-        ttl: 30
-    }
+  context: {
+    mediaType: BANNER,
+    netRevenue: true,
+    ttl: 300,
+    currency: DEFAULT_CURRENCY,
+  },
+  request(buildRequest, imps, bidderRequest, context) {
+    const req = buildRequest(imps, bidderRequest, context);
+    // add additional information we might need on the backend
+    mergeDeep(req, {
+      ext: {
+        prebid: {
+          adapterVersion: `${BIDDER_VERSION}`,
+        },
+      },
+    });
+    return req;
+  },
 });
 
 export const spec = {
@@ -26,13 +42,17 @@ export const spec = {
     return !!(bid.params && bid.params.placementId);
   },
   buildRequests: function(bidRequests, bidderRequest) {
-    //we only want to bid if we are not in a safeframe
+    // we only want to bid if we are not in a safeframe
     if (isSafeFrameWindow()) {
-      return;
+      return null;
     }
 
-    const data = converter.toORTB({bidRequests, bidderRequest})
-    return [{
+    // if we can't access top we don't want to bid
+    if (!canAccessWindowTop()) {
+      return null;
+    }
+    const data = converter.toORTB({ bidRequests, bidderRequest });
+    return {
       method: 'POST',
       url: ENDPOINT_URL,
       data: data,
@@ -41,16 +61,13 @@ export const spec = {
         withCredentials: false
       },
       bidderRequest
-    }]
+    };
   },
   interpretResponse: function(response, request) {
-    if (response.body) {
-      const res = converter.fromORTB({ response: response.body, request: request.data });
-      const bids = res.bids;
-      logMessage('interpretResponse', bids);
-      return bids;
-    }
-    return [];
+    console.log('interpretResponse', response, request);
+    const res = converter.fromORTB({ response: response.body, request: request.data });
+    const bids = res.bids;
+    return bids;
   },
 
   onBidWon: (bid) => {
