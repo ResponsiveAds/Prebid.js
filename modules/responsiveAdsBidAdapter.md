@@ -30,7 +30,7 @@ var adUnits = [{
 
     // Replace this object to test a new Adapter!
     bids: [{
-        bidder: 'responsiveAds',
+        bidder: 'responsiveads',
         params: {
             placementId: 13144370,
         }
