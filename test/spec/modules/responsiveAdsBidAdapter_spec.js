@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { spec } from 'modules/responsiveAdsBidAdapter.js';
 import * as utils from 'src/utils.js';
 
-describe('responsiveAdsBidAdapter', function () {
+describe('responsiveAdsBidAdapter', function() {
   let bidRequests;
   let bidderRequest;
   let sandbox;
@@ -12,20 +12,20 @@ describe('responsiveAdsBidAdapter', function () {
     sandbox.stub(utils, 'isSafeFrameWindow').returns(false);
     sandbox.stub(utils, 'canAccessWindowTop').returns(true);
     bidRequests = [{
-        bidder: 'responsiveAds',
-        params: {
-          placementId: '1',
-        },
-        adUnitCode: '/3434399/header-bid-tag-1',
-        mediaTypes: {
-          banner: {
-            sizes: [[300, 250], [300, 600]],
-          }
-        },
-        bidId: '123',
-        auctionId: '456',
-        bidderRequestId: '789',
-        transactionId: '123'
+      bidder: 'responsiveads',
+      params: {
+        placementId: '1',
+      },
+      adUnitCode: '/3434399/header-bid-tag-1',
+      mediaTypes: {
+        banner: {
+          sizes: [[300, 250], [300, 600]],
+        }
+      },
+      bidId: '123',
+      auctionId: '456',
+      bidderRequestId: '789',
+      transactionId: '123'
     }];
 
     bidderRequest = {
@@ -40,7 +40,7 @@ describe('responsiveAdsBidAdapter', function () {
   describe('Check if bid is valid', function() {
     it('Should accept valid bid', function() {
       const validBid = {
-        bidder: 'responsiveAds',
+        bidder: 'responsiveads',
         params: {
           placementId: '1',
         },
@@ -52,7 +52,7 @@ describe('responsiveAdsBidAdapter', function () {
 
     it('Should reject bid if missing placementId', function() {
       const invalidBid = {
-        bidder: 'responsiveAds',
+        bidder: 'responsiveads',
         params: {}
       };
 
@@ -96,24 +96,24 @@ describe('responsiveAdsBidAdapter', function () {
     it('Should return complete bid response', function() {
       const serverResponse = {
         body: {
-          id: "response-id",
-          cur: "USD",
+          id: 'response-id',
+          cur: 'USD',
           seatbid: [
             {
               bid: [
                 {
-                  id: "123",
-                  impid: "123",
+                  id: '123',
+                  impid: '123',
                   price: 0.5,
                   adm: `<creative></creative>`,
-                  nurl: "https://example.com/win",
-                  crid: "662d13e12e0c567af92d0918",
+                  nurl: 'https://example.com/win',
+                  crid: '662d13e12e0c567af92d0918',
                   w: 300,
                   h: 250,
-                  mediaType: "banner",
-                  adomain: ["responsiveads.com"],
+                  mediaType: 'banner',
+                  adomain: ['responsiveads.com'],
                   attr: [1],
-                  cat: ["IAB1"]
+                  cat: ['IAB1']
                 }
               ]
             }
