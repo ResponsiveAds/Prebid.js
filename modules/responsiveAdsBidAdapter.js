@@ -12,6 +12,8 @@ const BIDDER_VERSION = '1.0';
 const BIDDER_CODE = 'responsiveAds';
 const ENDPOINT_URL = 'https://ve60c4xzl9.execute-api.us-east-1.amazonaws.com/prod/prebidjs';
 const DEFAULT_CURRENCY = 'USD';
+const IAB_GVL_ID = 1189;
+
 
 const converter = ortbConverter({
   context: {
@@ -36,6 +38,7 @@ const converter = ortbConverter({
 
 export const spec = {
   code: BIDDER_CODE,
+  gvlid: IAB_GVL_ID,
   supportedMediaTypes: [BANNER],
   isBidRequestValid: function(bid) {
     // validate the bid request
