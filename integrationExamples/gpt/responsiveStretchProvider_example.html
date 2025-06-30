@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Stretch Provider Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .ad-slot {
+            border: 2px dashed #ccc;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .ad-slot-banner {
+            width: 728px;
+            height: 90px;
+        }
+        
+        .ad-slot-medium {
+            width: 300px;
+            height: 250px;
+        }
+        
+        .ad-slot-large {
+            width: 970px;
+            height: 250px;
+        }
+        
+        .sidebar {
+            float: right;
+            width: 300px;
+            padding: 20px;
+            background: #f5f5f5;
+            margin-left: 20px;
+        }
+        
+        .main-content {
+            margin-right: 340px;
+        }
+        
+        .debug-info {
+            background: #e7f3ff;
+            border: 1px solid #007cba;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .debug-info h3 {
+            margin-top: 0;
+            color: #007cba;
+        }
+        
+        .debug-info pre {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                float: none;
+                width: auto;
+                margin-left: 0;
+            }
+            
+            .main-content {
+                margin-right: 0;
+            }
+            
+            .ad-slot-banner,
+            .ad-slot-large {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Responsive Stretch Provider Example</h1>
+        
+        <!-- <div class="debug-info">
+            <h3>Debug Information</h3>
+            <p>This example demonstrates the Responsive Stretch Provider module. Open browser console to see debug logs.</p>
+            <div>
+                <strong>Viewport Size:</strong> <span id="viewport-size">-</span><br>
+                <strong>Stretch Data Collected:</strong> <span id="data-status">Waiting...</span>
+            </div>
+            <pre id="stretch-data">Loading...</pre>
+        </div> -->
+
+        <!-- Top Banner Ad -->
+        <div id="div-gpt-ad-banner-top" class="ad-slot ad-slot-banner">
+            Top Banner Ad (728x90)
+        </div>
+
+        <div class="sidebar">
+            <h3>Sidebar</h3>
+            <p>This is sidebar content with ads.</p>
+            
+            <!-- Sidebar Medium Rectangle -->
+            <!-- <div id="div-gpt-ad-sidebar-1" class="ad-slot ad-slot-medium">
+                Sidebar Ad (300x250)
+            </div> -->
+            
+            <p>More sidebar content...</p>
+            
+            <!-- Another Sidebar Ad -->
+            <!-- <div id="div-gpt-ad-sidebar-2" class="ad-slot ad-slot-medium">
+                Sidebar Ad 2 (300x250)
+            </div> -->
+        </div>
+
+        <div class="main-content">
+            <h2>Main Content</h2>
+            <p>This is the main content area with various ad placements to demonstrate the responsive stretch provider.</p>
+            
+            <!-- In-Content Ad -->
+            <!-- <div id="div-gpt-ad-content-1" class="ad-slot ad-slot-medium">
+                In-Content Ad (300x250)
+            </div> -->
+            
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            
+            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            
+            <!-- Large Bottom Ad -->
+            <!-- <div id="div-gpt-ad-bottom" class="ad-slot ad-slot-large">
+                Bottom Large Ad (970x250)
+            </div> -->
+        </div>
+        
+        <div style="clear: both;"></div>
+    </div>
+
+    <!-- Prebid.js -->
+    <script async src="../../build/dev/prebid.js"></script>
+    
+    <script>
+        var pbjs = pbjs || {};
+        pbjs.que = pbjs.que || [];
+
+        // Define ad units
+        var adUnits = [
+            {
+                code: 'div-gpt-ad-banner-top',
+                mediaTypes: {
+                    banner: {
+                        sizes: [[728, 90], [970, 90], [970, 250], [300, 250]]
+                    }
+                },
+                bids: [
+                    {
+                        bidder: 'appnexus',
+                        params: {
+                            placementId: 13144370
+                        }
+                    },
+                    {
+                        bidder: 'responsiveads',
+                        params: {
+                            placementId: 13144370
+                        }
+                    }
+                ]
+            },
+            // {
+            //     code: 'div-gpt-ad-sidebar-1',
+            //     mediaTypes: {
+            //         banner: {
+            //             sizes: [[300, 250], [300, 600]]
+            //         }
+            //     },
+            //     bids: [
+            //         {
+            //             bidder: 'appnexus',
+            //             params: {
+            //                 placementId: 13144370
+            //             }
+            //         }
+            //     ]
+            // },
+            // {
+            //     code: 'div-gpt-ad-sidebar-2',
+            //     mediaTypes: {
+            //         banner: {
+            //             sizes: [[300, 250]]
+            //         }
+            //     },
+            //     bids: [
+            //         {
+            //             bidder: 'appnexus',
+            //             params: {
+            //                 placementId: 13144370
+            //             }
+            //         }
+            //     ]
+            // },
+            // {
+            //     code: 'div-gpt-ad-content-1',
+            //     mediaTypes: {
+            //         banner: {
+            //             sizes: [[300, 250], [336, 280]]
+            //         }
+            //     },
+            //     bids: [
+            //         {
+            //             bidder: 'appnexus',
+            //             params: {
+            //                 placementId: 13144370
+            //             }
+            //         }
+            //     ]
+            // },
+            // {
+            //     code: 'div-gpt-ad-bottom',
+            //     mediaTypes: {
+            //         banner: {
+            //             sizes: [[970, 250], [970, 90], [728, 90]]
+            //         }
+            //     },
+            //     bids: [
+            //         {
+            //             bidder: 'appnexus',
+            //             params: {
+            //                 placementId: 13144370
+            //             }
+            //         }
+            //     ]
+            // }
+        ];
+
+        // Update viewport size display
+        // function updateViewportInfo() {
+        //     const viewport = `${window.innerWidth} x ${window.innerHeight}`;
+        //     document.getElementById('viewport-size').textContent = viewport;
+        // }
+
+        // Display stretch data
+        // function displayStretchData(data) {
+        //     document.getElementById('stretch-data').textContent = JSON.stringify(data, null, 2);
+        //     document.getElementById('data-status').textContent = 'Collected';
+        // }
+
+        pbjs.que.push(function() {
+            // Configure Prebid with Responsive Stretch Provider
+            pbjs.setConfig({
+                debug: true,
+                realTimeData: {
+                    auctionDelay: 200, // Allow time for DOM measurement
+                    dataProviders: [
+                        {
+                            name: 'responsiveStretch',
+                            waitForIt: true,
+                            params: {
+                                // Send data to all bidders globally
+                                global: true,
+                                impLevel: true,
+                                // Or target specific bidders:
+                                // bidders: ['appnexus', 'rubicon']
+                            }
+                        }
+                    ]
+                }
+            });
+
+            // Add ad units
+            pbjs.addAdUnits(adUnits);
+
+            // Event listeners for debugging
+            pbjs.onEvent('bidRequested', function(data) {
+                console.log('Bid Requested:', data);
+                
+                // Extract and display responsive stretch data
+                if (data.ortb2?.site?.ext?.data?.responsiveStretch) {
+                    console.log('Responsive Stretch Data:', data.ortb2.site.ext.data.responsiveStretch);
+                    //displayStretchData(data.ortb2.site.ext.data.responsiveStretch);
+                }
+            });
+
+            pbjs.onEvent('bidResponse', function(data) {
+                console.log('Bid Response:', data);
+            });
+
+            pbjs.onEvent('auctionEnd', function(data) {
+                console.log('Auction End:', data);
+            });
+
+            // Request bids
+            pbjs.requestBids({
+                timeout: 3000,
+                bidsBackHandler: function(bidResponses) {
+                    console.log('All bids back:', bidResponses);
+                    
+                    // In a real implementation, you would render the ads here
+                    Object.keys(bidResponses).forEach(adUnitCode => {
+                        const element = document.getElementById(adUnitCode);
+                        if (element && bidResponses[adUnitCode].bids.length > 0) {
+                            const bid = bidResponses[adUnitCode].bids[0];
+                            element.innerHTML = `
+                                <div>${bid.ad}</div>
+                                <div style="background: #e7ffe7; padding: 10px; text-align: center;">
+                                    <strong>Mock Ad</strong><br>
+                                    Bidder: ${bid.bidder}<br>
+                                    CPM: $${bid.cpm}<br>
+                                    Size: ${bid.width}x${bid.height}
+                                </div>
+                            `;
+                            element.style.border = '2px solid #4CAF50';
+                        }
+                    });
+                }
+            });
+        });
+
+        // Initialize viewport info
+        // updateViewportInfo();
+        // window.addEventListener('resize', updateViewportInfo);
+
+        // Manual stretch data collection for demonstration
+        // function collectManualStretchData() {
+        //     const data = {};
+        //     adUnits.forEach(adUnit => {
+        //         const element = document.getElementById(adUnit.code);
+        //         if (element) {
+        //             const rect = element.getBoundingClientRect();
+        //             data[adUnit.code] = {
+        //                 width: Math.round(rect.width),
+        //                 height: Math.round(rect.height),
+        //                 top: Math.round(rect.top),
+        //                 left: Math.round(rect.left),
+        //                 stretchLeft: Math.round(rect.left),
+        //                 stretchRight: Math.round(window.innerWidth - rect.right),
+        //                 stretchUp: Math.round(rect.top),
+        //                 stretchDown: Math.round(window.innerHeight - rect.bottom),
+        //                 viewportWidth: window.innerWidth,
+        //                 viewportHeight: window.innerHeight
+        //             };
+        //         }
+        //     });
+            
+        //     console.log('Manual Stretch Data Collection:', data);
+        //     displayStretchData(data);
+        // }
+
+        // Collect manual data as fallback
+        // window.addEventListener('load', function() {
+        //     setTimeout(collectManualStretchData, 1000);
+        // });
+    </script>
+</body>
+</html>

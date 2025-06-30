@@ -166,11 +166,11 @@ function makeDevpackPkg(config = webpackConfig) {
     })
 
     const babelConfig = require('./babelConfig.js')({
-      disableFeatures: helpers.getDisabledFeatures(), 
+      disableFeatures: helpers.getDisabledFeatures(),
       prebidDistUrlBase: argv.distUrlBase || '/build/dev/',
       ES5: argv.ES5 // Pass ES5 flag to babel config
     });
-    
+
     // update babel config to set local dist url
     cloned.module.rules
       .flatMap((rule) => rule.use)
