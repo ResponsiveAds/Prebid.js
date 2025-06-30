@@ -257,6 +257,7 @@ export function renderAdDirect(doc, adId, options) {
     emitAdRenderFail(Object.assign({id: adId, bid}, {reason, message}));
   }
   function resizeFn(width, height) {
+    // RAD - we can expand the container after the bid response is received
     const frame = doc.defaultView?.frameElement;
     if (frame) {
       if (width) {

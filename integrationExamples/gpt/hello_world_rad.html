@@ -1,0 +1,203 @@
+<!--
+This page calls a single bidder for a single ad slot. It can be considered a "hello world" example for using
+Prebid with the Google Publisher Tag.
+It also makes a good test page for new adapter PR submissions. Simply set your server's Bid Params object in the
+bids array inside the adUnits, and it will use your adapter to load an ad.
+NOTE that many ad servers won't send back an ad if the URL is localhost... so you might need to
+set an alias in your /etc/hosts file so that you can load this page from a different domain.
+-->
+
+<html>
+
+<head>
+    <script async src="../../build/dev/prebid.js"></script>
+    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+    <script>
+        
+        // Example of a secure custom banner renderer implementation
+        window.BannerRenderer = function (config) {
+            return {
+                render: function (bid) {
+                    // Get the container element
+                    const container = document.getElementById(config.adUnitCode);
+                    if (!container) return;
+                    
+                    // Create iframe to provide a secure environment
+                    const iframe = document.createElement("iframe");
+                    iframe.width = `${config.width}px`;
+                    iframe.height = `${config.height}px`;
+                    iframe.style.border = "none";
+                    // iframe.style.transition = `opacity ${config.effects.duration}ms ease-in-out`;
+                    iframe.style.opacity = "0";
+                    iframe.title = "Advertisement Stretch";
+                    iframe.setAttribute("scrolling", "no");
+                    
+                    // Add iframe to container
+                    container.appendChild(iframe);
+                    
+                    // Set iframe content
+                    const iframeDoc = iframe.contentWindow.document;
+                    iframeDoc.open();
+                    iframeDoc.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
+                        <style>
+                            body { margin: 0; padding: 0; overflow: hidden; }
+                            .ad-container { 
+                            width: 100%; 
+                            height: 100%; 
+                            position: relative;
+                            background-color: #ffffff;
+                            }
+                        </style>
+                        </head>
+                        <body>
+                        <div class="ad-container">${bid.ad || ""}</div>
+                        </body>
+                        </html>
+                    `);
+                    iframeDoc.close();
+                    
+                    // if (config.effects.onViewable) {
+                    //     // Set up IntersectionObserver for viewability-triggered effects
+                    //     const observer = new IntersectionObserver(
+                    //         (entries) => {
+                    //             entries.forEach((entry) => {
+                    //                 if (entry.isIntersecting) {
+                    //                     // Apply fade-in when ad comes into view
+                    //                     iframe.style.opacity = "1";
+                    //                     observer.disconnect(); // Only need to trigger once
+                    //                 }
+                    //             });
+                    //         },
+                    //         { threshold: 0.5 }
+                    //     );
+                    
+                    //     observer.observe(container);
+                    // } else {
+                    //     // Immediate fade-in
+                    //     setTimeout(() => {
+                    //         iframe.style.opacity = "1";
+                    //     }, 10);
+                    // }
+                    
+                    // Cleanup function
+                    return {
+                        destroy: function () {
+                            if (container && iframe) {
+                                container.removeChild(iframe);
+                            }
+                        },
+                    };
+                },
+            };
+        };
+        var FAILSAFE_TIMEOUT = 3300;
+        var PREBID_TIMEOUT = 1000;
+        
+        var adUnits = [{
+            code: 'div-gpt-ad-1460505748561-0',
+            mediaTypes: {
+                banner: {
+                    stretchAdSlot: true,
+                    sizes: [[300, 250]],
+                }
+            },
+            
+            // Replace this object to test a new Adapter!
+            bids: [{
+                bidder: 'adnuntius',
+                params: {
+                    auId: "201208",
+                    network: "1287",
+                    bidType: 'netBid'
+                }
+            }],
+            // renderer: {
+            //     // url: `https://cdn.jsdelivr.net/npm/in-renderer-js@1/dist/in-renderer.umd.min.js`,
+            //     render: (bid) => {
+            //         // Create an enhanced banner experience
+            //         const bannerRenderer = new window.BannerRenderer({
+            //             adUnitCode: bid.adUnitCode,
+            //             adHtml: bid.ad,
+            //             width: bid.width,
+            //             height: bid.height,
+            //             // Add animation effects
+            //             effects: {
+            //                 fadeIn: true,
+            //                 duration: 300,
+            //                 onViewable: true,
+            //             },
+            //         });
+            //         bannerRenderer.render(bid);
+            //     },
+            // },
+            
+        }];
+        
+        var pbjs = pbjs || {};
+        pbjs.que = pbjs.que || [];
+        
+    </script>
+    
+    <script>
+        var googletag = googletag || {};
+        googletag.cmd = googletag.cmd || [];
+        googletag.cmd.push(function () {
+            googletag.pubads().disableInitialLoad();
+        });
+        
+        pbjs.que.push(function () {
+            pbjs.addAdUnits(adUnits);
+            
+            pbjs.requestBids({
+                bidsBackHandler: sendAdserverRequest,
+                timeout: PREBID_TIMEOUT
+            });
+        });
+        
+        function sendAdserverRequest() {
+            if (pbjs.adserverRequestSent) return;
+            pbjs.adserverRequestSent = true;
+            googletag.cmd.push(function () {
+                if (pbjs.libLoaded) {
+                    pbjs.que.push(function () {
+                        pbjs.setTargetingForGPTAsync();
+                        googletag.pubads().refresh();
+                    });
+                } else {
+                    googletag.pubads().refresh();
+                }
+            });
+        }
+        
+        setTimeout(function () {
+            sendAdserverRequest();
+        }, FAILSAFE_TIMEOUT);
+        
+    </script>
+    
+    <script>
+        googletag.cmd.push(function () {
+            googletag.defineSlot('/19968336/header-bid-tag-0', [[300, 250], [300, 600]], 'div-gpt-ad-1460505748561-0').addService(googletag.pubads());
+            
+            googletag.pubads().enableSingleRequest();
+            googletag.enableServices();
+        });
+    </script>
+</head>
+
+<body>
+    <h2>Prebid.js Test</h2>
+    <h5>Div-1</h5>
+    <div id='div-gpt-ad-1460505748561-0'>
+        <script type='text/javascript'>
+            googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-0'); });
+        </script>
+    </div>
+</body>
+
+</html>
