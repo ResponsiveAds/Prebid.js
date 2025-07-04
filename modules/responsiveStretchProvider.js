@@ -216,7 +216,7 @@ function init(moduleConfig, userConsent) {
 
   // Validate configuration
   if (_moduleConfig.params) {
-    const { bidders, global, impLevel } = _moduleConfig.params;
+    const { bidders, global, impLevel, adUnitLevel } = _moduleConfig.params;
 
     if (bidders && !isArray(bidders)) {
       logWarn(MODULE_NAME, 'bidders parameter should be an array');
@@ -228,6 +228,10 @@ function init(moduleConfig, userConsent) {
 
     if (impLevel !== undefined && typeof impLevel !== 'boolean') {
       logWarn(MODULE_NAME, 'impLevel parameter should be a boolean');
+    }
+
+    if (adUnitLevel !== undefined && typeof adUnitLevel !== 'boolean') {
+      logWarn(MODULE_NAME, 'adUnitLevel parameter should be a boolean');
     }
   }
 
@@ -253,23 +257,20 @@ function getBidRequestData(reqBidsConfigObj, callback, moduleConfig, userConsent
       return;
     }
 
-    // Wait for next tick to ensure DOM is ready
-    setTimeout(() => {
-      try {
-        const stretchData = collectResponsiveStretchData(adUnits);
+    try {
+      const stretchData = collectResponsiveStretchData(adUnits);
 
-        if (!isEmpty(stretchData)) {
-          addStretchDataToORTB2(reqBidsConfigObj, stretchData, moduleConfig || _moduleConfig);
-          logInfo(MODULE_NAME, 'Successfully added responsive stretch data to bid request');
-        } else {
-          logWarn(MODULE_NAME, 'No stretch data collected');
-        }
-      } catch (error) {
-        logError(MODULE_NAME, 'Error processing responsive stretch data:', error);
+      if (!isEmpty(stretchData)) {
+        addStretchDataToORTB2(reqBidsConfigObj, stretchData, moduleConfig || _moduleConfig);
+        logInfo(MODULE_NAME, 'Successfully added responsive stretch data to bid request');
+      } else {
+        logWarn(MODULE_NAME, 'No stretch data collected');
       }
+    } catch (error) {
+      logError(MODULE_NAME, 'Error processing responsive stretch data:', error);
+    }
 
-      callback();
-    }, 0);
+    callback();
   } catch (error) {
     logError(MODULE_NAME, 'Error in getBidRequestData:', error);
     callback();

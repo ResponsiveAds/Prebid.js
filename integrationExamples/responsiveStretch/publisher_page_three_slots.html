@@ -1,0 +1,287 @@
+<html>
+
+<head>
+    <script async src="../../build/dev/prebid.js"></script>
+    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+
+    <script src="./customResizeFn.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .content {
+            flex: 2;
+        }
+        
+        .sidebar {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .ad-slot {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .ad-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .article-content {
+            margin: 30px 0;
+        }
+        
+        .article-content h3 {
+            color: #333;
+            border-bottom: 2px solid #007cba;
+            padding-bottom: 10px;
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+            color: #444;
+        }
+        
+        .sidebar-widget {
+            background: #f5f5f5;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .sidebar-widget h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                min-width: auto;
+            }
+        }
+    </style>
+    
+    <script>
+        var FAILSAFE_TIMEOUT = 3300;
+        var PREBID_TIMEOUT = 1000;
+        
+
+        
+        var adUnits = [
+            {
+                code: 'div-gpt-ad-1460505748561-0',
+                mediaTypes: {
+                    banner: {
+                        sizes: [[300, 250]],
+                        responsiveStretch: true,
+                    }
+                },
+                customResizeFn: customResizeFn,
+                bids: [{
+                    bidder: 'responsiveads',
+                    params: {
+                        auId: "201208",
+                        network: "1287",
+                        bidType: 'netBid'
+                    }
+                }]
+            }
+        ];
+        
+        var pbjs = pbjs || {};
+        pbjs.que = pbjs.que || [];
+        
+    </script>
+    
+    <script>
+        var googletag = googletag || {};
+        googletag.cmd = googletag.cmd || [];
+        googletag.cmd.push(function () {
+            googletag.pubads().disableInitialLoad();
+        });
+        
+        pbjs.que.push(function () {
+            pbjs.setConfig({
+                debug: true,
+                realTimeData: {
+                    // auctionDelay: false, // Do we need this?
+                    dataProviders: [
+                        {
+                            name: 'responsiveStretch',
+                            waitForIt: true,
+                            params: {
+                                // Send data to all bidders globally
+                                global: true,
+                                impLevel: true,
+                                // bidders: ['bidder1', 'bidder2'] // Optional: specific bidders
+                            }
+                        }
+                    ]
+                }
+            });
+            pbjs.addAdUnits(adUnits);
+            
+            pbjs.requestBids({
+                bidsBackHandler: sendAdserverRequest,
+                timeout: PREBID_TIMEOUT
+            });
+        });
+        
+        function sendAdserverRequest() {
+            if (pbjs.adserverRequestSent) return;
+            pbjs.adserverRequestSent = true;
+            googletag.cmd.push(function () {
+                if (pbjs.libLoaded) {
+                    pbjs.que.push(function () {
+                        pbjs.setTargetingForGPTAsync();
+                        googletag.pubads().refresh();
+                    });
+                } else {
+                    googletag.pubads().refresh();
+                }
+            });
+        }
+        
+        setTimeout(function () {
+            sendAdserverRequest();
+        }, FAILSAFE_TIMEOUT);
+        
+    </script>
+    
+    <script>
+        googletag.cmd.push(function () {
+            // Define ad slots
+            googletag.defineSlot('/19968336/header-bid-tag-0', [[300, 250], [300, 600]], 'div-gpt-ad-1460505748561-0').addService(googletag.pubads());
+            
+            googletag.pubads().enableSingleRequest();
+            googletag.enableServices();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Publisher Page - Three Ad Slots Demo</h1>
+            <p>This page demonstrates three different ad placements, all using the same custom resize function that stretches ads to full screen width.</p>
+        </header>
+
+        <div class="ad-slot">
+            <div class="ad-label">TOP Advertisement (300x250)</div>
+            <!-- <div id='div-gpt-ad-1460505748561-0'>
+                <script type='text/javascript'>
+                    googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-0'); });
+                </script>
+            </div> -->
+        </div>
+        
+        <div class="main-content">
+            <div class="content">
+                <div class="article-content">
+                    <h3>Latest Technology News</h3>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p>
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+                        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                    </p>
+                </div>
+                
+                <!-- In-Content Ad -->
+                <div class="ad-slot">
+                    <div class="ad-label">In-Content Advertisement (300x250)</div>
+                    <!-- <div id='div-gpt-ad-1460505748561-0'>
+                        <script type='text/javascript'>
+                            googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-0'); });
+                        </script>
+                    </div> -->
+                </div>
+                
+                <div class="article-content">
+                    <h3>Industry Updates</h3>
+                    <p>
+                        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+                        totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+                    </p>
+                    <p>
+                        Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos 
+                        qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.
+                    </p>
+                    <p>
+                        At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque 
+                        corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- Sidebar Ad -->
+                <div class="ad-slot">
+                    <div class="ad-label">Sidebar Advertisement (300x250)</div>
+                    <div id='div-gpt-ad-1460505748561-0'>
+                        <script type='text/javascript'>
+                            googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-0'); });
+                        </script>
+                    </div>
+                </div>
+                
+                <div class="sidebar-widget">
+                    <h4>Popular Articles</h4>
+                    <ul>
+                        <li><a href="#">How to Optimize Ad Performance</a></li>
+                        <li><a href="#">Understanding Programmatic Advertising</a></li>
+                        <li><a href="#">Best Practices for Header Bidding</a></li>
+                        <li><a href="#">Mobile Ad Optimization Tips</a></li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-widget">
+                    <h4>Newsletter Signup</h4>
+                    <p>Stay updated with the latest industry news and insights.</p>
+                    <input type="email" placeholder="Enter your email" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                    <button style="width: 100%; padding: 10px; background: #007cba; color: white; border: none; border-radius: 4px;">Subscribe</button>
+                </div>
+                
+                <div class="sidebar-widget">
+                    <h4>Social Media</h4>
+                    <p>Follow us on social media for real-time updates and discussions.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="#" style="color: #007cba;">Twitter</a>
+                        <a href="#" style="color: #007cba;">LinkedIn</a>
+                        <a href="#" style="color: #007cba;">Facebook</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer style="margin-top: 50px; padding: 20px 0; border-top: 1px solid #ddd; text-align: center; color: #666;">
+            <p>&copy; 2025 Publisher Demo Site. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+
+</html>

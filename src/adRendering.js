@@ -285,7 +285,7 @@ export function renderAdDirect(doc, adId, options) {
     if (customResizeFn) {
       // Use the custom resizeFn if available
       try {
-        customResizeFn(width, height, doc.defaultView?.frameElement, doc);
+        customResizeFn(width, height, doc.defaultView?.frameElement, doc, bid);
       } catch (e) {
         logWarn('Error executing custom resizeFn:', e);
         // Fall back to default behavior if custom function fails
