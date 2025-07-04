@@ -40,6 +40,7 @@ function calculateAdSlotSpace(element) {
   try {
     const rect = getBoundingClientRect(element);
     const viewportSize = getViewportSize();
+    const maxAvailableWidth = getMaxAvailableWidth(element);
 
     // Calculate available space in all directions
     const availableSpace = {
@@ -47,42 +48,16 @@ function calculateAdSlotSpace(element) {
       width: Math.round(rect.width),
       height: Math.round(rect.height),
 
-      // Position relative to viewport
-      top: Math.round(rect.top),
-      left: Math.round(rect.left),
-      right: Math.round(viewportSize.width - rect.right),
-      bottom: Math.round(viewportSize.height - rect.bottom),
-
-      // Maximum possible expansion
-      maxWidth: Math.round(viewportSize.width),
-      maxHeight: Math.round(viewportSize.height),
-
-      // Available stretch space
-      stretchLeft: Math.round(rect.left),
-      stretchRight: Math.round(viewportSize.width - rect.right),
-      stretchUp: Math.round(rect.top),
-      stretchDown: Math.round(viewportSize.height - rect.bottom),
-
-      // Total available space if element could expand
-      totalAvailableWidth: Math.round(rect.width + rect.left + (viewportSize.width - rect.right)),
-      totalAvailableHeight: Math.round(rect.height + rect.top + (viewportSize.height - rect.bottom)),
-
       // Viewport information
       viewportWidth: Math.round(viewportSize.width),
       viewportHeight: Math.round(viewportSize.height),
 
       // Visibility information
-      isVisible: rect.width > 0 && rect.height > 0 &&
-                rect.bottom > 0 && rect.right > 0 &&
-                rect.top < viewportSize.height && rect.left < viewportSize.width,
+      // isVisible: rect.width > 0 && rect.height > 0 &&
+      //           rect.bottom > 0 && rect.right > 0 &&
+      //           rect.top < viewportSize.height && rect.left < viewportSize.width,
 
-      // Percentage of viewport occupied
-      viewportWidthPercentage: Math.round((rect.width / viewportSize.width) * 100),
-      viewportHeightPercentage: Math.round((rect.height / viewportSize.height) * 100),
-
-      // Parent container information
-      parentWidth: element.parentElement ? Math.round(getBoundingClientRect(element.parentElement).width) : null,
-      parentHeight: element.parentElement ? Math.round(getBoundingClientRect(element.parentElement).height) : null
+      maxAvailableWidth: Math.round(maxAvailableWidth),
     };
 
     return availableSpace;
@@ -170,7 +145,6 @@ function addStretchDataToORTB2(reqBidsConfigObj, stretchData, moduleConfig) {
         ext: {
           data: {
             responsiveStretch: {
-              viewport: getViewportSize(),
               adUnits: stretchData,
               timestamp: Date.now()
             }
@@ -190,7 +164,6 @@ function addStretchDataToORTB2(reqBidsConfigObj, stretchData, moduleConfig) {
         ext: {
           data: {
             responsiveStretch: {
-              viewport: getViewportSize(),
               adUnits: stretchData,
               timestamp: Date.now()
             }
@@ -303,6 +276,29 @@ function getBidRequestData(reqBidsConfigObj, callback, moduleConfig, userConsent
   }
 }
 
+/**
+ * Get the maximum available width for an element by checking parent constraints
+ * @param {HTMLElement} el - The element to check
+ * @returns {number} Maximum available width in pixels
+ */
+function getMaxAvailableWidth(el) {
+  let maxWidth = Infinity;
+  let current = el;
+
+  while (current && current !== document.body) {
+    const style = window.getComputedStyle(current);
+    const width = getBoundingClientRect(current).width;
+
+    if (style.display !== 'contents' && style.position !== 'absolute') {
+      maxWidth = Math.min(maxWidth, width);
+    }
+
+    current = current.parentElement;
+  }
+
+  return maxWidth;
+}
+
 /** @type {RtdSubmodule} */
 export const responsiveStretchSubmodule = {
   /**
@@ -342,5 +338,6 @@ export const internal = {
   calculateAdSlotSpace,
   findAdSlotElement,
   collectResponsiveStretchData,
-  addStretchDataToORTB2
+  addStretchDataToORTB2,
+  getMaxAvailableWidth
 };

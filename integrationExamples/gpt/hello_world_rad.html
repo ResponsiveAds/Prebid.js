@@ -18,6 +18,7 @@ set an alias in your /etc/hosts file so that you can load this page from a diffe
         window.BannerRenderer = function (config) {
             return {
                 render: function (bid) {
+                    console.log(bid);
                     // Get the container element
                     const container = document.getElementById(config.adUnitCode);
                     if (!container) return;
@@ -27,8 +28,7 @@ set an alias in your /etc/hosts file so that you can load this page from a diffe
                     iframe.width = `${config.width}px`;
                     iframe.height = `${config.height}px`;
                     iframe.style.border = "none";
-                    // iframe.style.transition = `opacity ${config.effects.duration}ms ease-in-out`;
-                    iframe.style.opacity = "0";
+                    iframe.style.opacity = "1";
                     iframe.title = "Advertisement Stretch";
                     iframe.setAttribute("scrolling", "no");
                     
@@ -61,29 +61,6 @@ set an alias in your /etc/hosts file so that you can load this page from a diffe
                     `);
                     iframeDoc.close();
                     
-                    // if (config.effects.onViewable) {
-                    //     // Set up IntersectionObserver for viewability-triggered effects
-                    //     const observer = new IntersectionObserver(
-                    //         (entries) => {
-                    //             entries.forEach((entry) => {
-                    //                 if (entry.isIntersecting) {
-                    //                     // Apply fade-in when ad comes into view
-                    //                     iframe.style.opacity = "1";
-                    //                     observer.disconnect(); // Only need to trigger once
-                    //                 }
-                    //             });
-                    //         },
-                    //         { threshold: 0.5 }
-                    //     );
-                    
-                    //     observer.observe(container);
-                    // } else {
-                    //     // Immediate fade-in
-                    //     setTimeout(() => {
-                    //         iframe.style.opacity = "1";
-                    //     }, 10);
-                    // }
-                    
                     // Cleanup function
                     return {
                         destroy: function () {
@@ -102,7 +79,6 @@ set an alias in your /etc/hosts file so that you can load this page from a diffe
             code: 'div-gpt-ad-1460505748561-0',
             mediaTypes: {
                 banner: {
-                    stretchAdSlot: true,
                     sizes: [[300, 250]],
                 }
             },
@@ -116,25 +92,20 @@ set an alias in your /etc/hosts file so that you can load this page from a diffe
                     bidType: 'netBid'
                 }
             }],
-            // renderer: {
-            //     // url: `https://cdn.jsdelivr.net/npm/in-renderer-js@1/dist/in-renderer.umd.min.js`,
-            //     render: (bid) => {
-            //         // Create an enhanced banner experience
-            //         const bannerRenderer = new window.BannerRenderer({
-            //             adUnitCode: bid.adUnitCode,
-            //             adHtml: bid.ad,
-            //             width: bid.width,
-            //             height: bid.height,
-            //             // Add animation effects
-            //             effects: {
-            //                 fadeIn: true,
-            //                 duration: 300,
-            //                 onViewable: true,
-            //             },
-            //         });
-            //         bannerRenderer.render(bid);
-            //     },
-            // },
+            renderer: {
+                // we are using a custom renderer defined above
+                // url: `https://cdn.jsdelivr.net/npm/in-renderer-js@1/dist/in-renderer.umd.min.js`,
+                render: (bid) => {
+                    // Create an enhanced banner experience
+                    const bannerRenderer = new window.BannerRenderer({
+                        adUnitCode: bid.adUnitCode,
+                        adHtml: bid.ad,
+                        width: bid.width,
+                        height: bid.height,
+                    });
+                    bannerRenderer.render(bid);
+                },
+            },
             
         }];
         

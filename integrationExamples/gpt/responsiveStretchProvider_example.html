@@ -184,83 +184,7 @@
                     }
                 ]
             },
-            // {
-            //     code: 'div-gpt-ad-sidebar-1',
-            //     mediaTypes: {
-            //         banner: {
-            //             sizes: [[300, 250], [300, 600]]
-            //         }
-            //     },
-            //     bids: [
-            //         {
-            //             bidder: 'appnexus',
-            //             params: {
-            //                 placementId: 13144370
-            //             }
-            //         }
-            //     ]
-            // },
-            // {
-            //     code: 'div-gpt-ad-sidebar-2',
-            //     mediaTypes: {
-            //         banner: {
-            //             sizes: [[300, 250]]
-            //         }
-            //     },
-            //     bids: [
-            //         {
-            //             bidder: 'appnexus',
-            //             params: {
-            //                 placementId: 13144370
-            //             }
-            //         }
-            //     ]
-            // },
-            // {
-            //     code: 'div-gpt-ad-content-1',
-            //     mediaTypes: {
-            //         banner: {
-            //             sizes: [[300, 250], [336, 280]]
-            //         }
-            //     },
-            //     bids: [
-            //         {
-            //             bidder: 'appnexus',
-            //             params: {
-            //                 placementId: 13144370
-            //             }
-            //         }
-            //     ]
-            // },
-            // {
-            //     code: 'div-gpt-ad-bottom',
-            //     mediaTypes: {
-            //         banner: {
-            //             sizes: [[970, 250], [970, 90], [728, 90]]
-            //         }
-            //     },
-            //     bids: [
-            //         {
-            //             bidder: 'appnexus',
-            //             params: {
-            //                 placementId: 13144370
-            //             }
-            //         }
-            //     ]
-            // }
         ];
-
-        // Update viewport size display
-        // function updateViewportInfo() {
-        //     const viewport = `${window.innerWidth} x ${window.innerHeight}`;
-        //     document.getElementById('viewport-size').textContent = viewport;
-        // }
-
-        // Display stretch data
-        // function displayStretchData(data) {
-        //     document.getElementById('stretch-data').textContent = JSON.stringify(data, null, 2);
-        //     document.getElementById('data-status').textContent = 'Collected';
-        // }
 
         pbjs.que.push(function() {
             // Configure Prebid with Responsive Stretch Provider
@@ -312,61 +236,58 @@
                 bidsBackHandler: function(bidResponses) {
                     console.log('All bids back:', bidResponses);
                     
-                    // In a real implementation, you would render the ads here
+                    // Render the ads with proper HTML and JS execution
                     Object.keys(bidResponses).forEach(adUnitCode => {
                         const element = document.getElementById(adUnitCode);
                         if (element && bidResponses[adUnitCode].bids.length > 0) {
                             const bid = bidResponses[adUnitCode].bids[0];
-                            element.innerHTML = `
-                                <div>${bid.ad}</div>
-                                <div style="background: #e7ffe7; padding: 10px; text-align: center;">
-                                    <strong>Mock Ad</strong><br>
-                                    Bidder: ${bid.bidder}<br>
-                                    CPM: $${bid.cpm}<br>
-                                    Size: ${bid.width}x${bid.height}
-                                </div>
-                            `;
+                            console.log('Rendering bid for', adUnitCode, bid);
+                            
+                            // Clear the element and set styling
+                            element.innerHTML = '';
                             element.style.border = '2px solid #4CAF50';
+                            element.style.backgroundColor = 'white';
+                            
+                            // Create container for the ad
+                            const adContainer = document.createElement('div');
+                            adContainer.style.width = '100%';
+                            adContainer.style.height = '100%';
+                            
+                            if (bid.ad) {
+                                //replace macros in bid.ad ... %epid! is size 300x250 for example
+                                bid.ad = bid.ad.replace(/%epid!/g, `${bid.width}x${bid.height}`);
+
+                                // Method 1: Use document.write approach for ads with JS
+                                const iframe = document.createElement('iframe');
+                                iframe.style.width = '100%';
+                                iframe.style.height = '100%';
+                                iframe.style.border = 'none';
+                                iframe.style.margin = '0';
+                                iframe.style.padding = '0';
+                                
+                                adContainer.appendChild(iframe);
+                                element.appendChild(adContainer);
+                                
+                                // Write the ad content to the iframe
+                                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                                iframeDoc.open();
+                                iframeDoc.write(bid.ad);
+                                iframeDoc.close();
+                                
+                            }
+                            
+                            // Add debug info
+                            // const debugDiv = document.createElement('div');
+                            // debugDiv.style.cssText = 'background: #e7ffe7; padding: 5px; text-align: center; font-size: 11px; margin-top: 2px; position: absolute; z-index: 1000;';
+                            // debugDiv.innerHTML = `
+                            //     Bidder: ${bid.bidder} | CPM: $${bid.cpm} | Size: ${bid.width}x${bid.height}
+                            // `;
+                            // element.appendChild(debugDiv);
                         }
                     });
                 }
             });
         });
-
-        // Initialize viewport info
-        // updateViewportInfo();
-        // window.addEventListener('resize', updateViewportInfo);
-
-        // Manual stretch data collection for demonstration
-        // function collectManualStretchData() {
-        //     const data = {};
-        //     adUnits.forEach(adUnit => {
-        //         const element = document.getElementById(adUnit.code);
-        //         if (element) {
-        //             const rect = element.getBoundingClientRect();
-        //             data[adUnit.code] = {
-        //                 width: Math.round(rect.width),
-        //                 height: Math.round(rect.height),
-        //                 top: Math.round(rect.top),
-        //                 left: Math.round(rect.left),
-        //                 stretchLeft: Math.round(rect.left),
-        //                 stretchRight: Math.round(window.innerWidth - rect.right),
-        //                 stretchUp: Math.round(rect.top),
-        //                 stretchDown: Math.round(window.innerHeight - rect.bottom),
-        //                 viewportWidth: window.innerWidth,
-        //                 viewportHeight: window.innerHeight
-        //             };
-        //         }
-        //     });
-            
-        //     console.log('Manual Stretch Data Collection:', data);
-        //     displayStretchData(data);
-        // }
-
-        // Collect manual data as fallback
-        // window.addEventListener('load', function() {
-        //     setTimeout(collectManualStretchData, 1000);
-        // });
     </script>
 </body>
 </html>
