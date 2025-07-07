@@ -193,6 +193,13 @@ function addStretchDataToORTB2(reqBidsConfigObj, stretchData, moduleConfig) {
           }
         };
 
+        // Add wmax to banner object if maxAvailableWidth is available
+        if (stretchInfo.maxAvailableWidth && stretchInfo.maxAvailableWidth !== Infinity) {
+          impData.banner = {
+            wmax: stretchInfo.maxAvailableWidth
+          };
+        }
+
         // Ensure ortb2Imp exists
         adUnit.ortb2Imp = adUnit.ortb2Imp || {};
         mergeDeep(adUnit.ortb2Imp, impData);
