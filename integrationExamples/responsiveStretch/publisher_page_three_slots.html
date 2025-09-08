@@ -107,6 +107,42 @@
                         bidType: 'netBid'
                     }
                 }]
+            },
+            {
+                code: 'div-gpt-ad-1460505748561-1',
+                mediaTypes: {
+                    banner: {
+                        sizes: [[300, 250]],
+                        responsiveStretch: true,
+                    }
+                },
+                customResizeFn: customResizeFn,
+                bids: [{
+                    bidder: 'responsiveads',
+                    params: {
+                        auId: "2012081",
+                        network: "12871",
+                        bidType: 'netBid'
+                    }
+                }]
+            },
+            {
+                code: 'div-gpt-ad-1460505748561-2',
+                mediaTypes: {
+                    banner: {
+                        sizes: [[300, 250]],
+                        responsiveStretch: true,
+                    }
+                },
+                customResizeFn: customResizeFn,
+                bids: [{
+                    bidder: 'responsiveads',
+                    params: {
+                        auId: "2012081",
+                        network: "12871",
+                        bidType: 'netBid'
+                    }
+                }]
             }
         ];
         
@@ -174,7 +210,10 @@
         googletag.cmd.push(function () {
             // Define ad slots
             googletag.defineSlot('/19968336/header-bid-tag-0', [[300, 250], [300, 600]], 'div-gpt-ad-1460505748561-0').addService(googletag.pubads());
-            
+            googletag.defineSlot('/19968336/header-bid-tag-1', [[300, 250], [300, 600]], 'div-gpt-ad-1460505748561-1').addService(googletag.pubads());
+            googletag.defineSlot('/19968336/header-bid-tag-2', [[300, 250], [300, 600]], 'div-gpt-ad-1460505748561-2').addService(googletag.pubads());
+
+
             googletag.pubads().enableSingleRequest();
             googletag.enableServices();
         });
@@ -190,11 +229,11 @@
 
         <div class="ad-slot">
             <div class="ad-label">TOP Advertisement (300x250)</div>
-            <!-- <div id='div-gpt-ad-1460505748561-0'>
+            <div id='div-gpt-ad-1460505748561-1'>
                 <script type='text/javascript'>
-                    googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-0'); });
+                    googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-1'); });
                 </script>
-            </div> -->
+            </div>
         </div>
         
         <div class="main-content">
@@ -214,11 +253,11 @@
                 <!-- In-Content Ad -->
                 <div class="ad-slot">
                     <div class="ad-label">In-Content Advertisement (300x250)</div>
-                    <!-- <div id='div-gpt-ad-1460505748561-0'>
+                    <div id='div-gpt-ad-1460505748561-2'>
                         <script type='text/javascript'>
-                            googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-0'); });
+                            googletag.cmd.push(function () { googletag.display('div-gpt-ad-1460505748561-2'); });
                         </script>
-                    </div> -->
+                    </div>
                 </div>
                 
                 <div class="article-content">
