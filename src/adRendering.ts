@@ -52,6 +52,10 @@ declare module './events' {
     [EVENTS.EXPIRED_RENDER]: [Bid];
 
     [EVENTS.BROWSER_INTERVENTION]: [BrowserInterventionData];
+    /**
+     * Fired when a creative requests programmatic stretching to full width.
+     */
+    [EVENTS.PROGRAMMATIC_STRETCH]: [ProgrammaticStretchData];
   }
 }
 
@@ -147,6 +151,22 @@ export function emitBrowserIntervention(data: BrowserInterventionData) {
   events.emit(EVENTS.BROWSER_INTERVENTION, data);
 }
 
+/**
+ * Data for the PROGRAMMATIC_STRETCH event.
+ */
+type ProgrammaticStretchData = {
+  bid: Bid;
+  adId: string;
+}
+
+/**
+ * Emit the PROGRAMMATIC_STRETCH event.
+ * This event is fired when a creative requests to be stretched to 100% width of available space.
+ */
+export function emitProgrammaticStretch(data: ProgrammaticStretchData) {
+  events.emit(EVENTS.PROGRAMMATIC_STRETCH, data);
+}
+
 export function handleCreativeEvent(data, bidResponse) {
   switch (data.event) {
     case EVENTS.AD_RENDER_FAILED:
@@ -169,6 +189,12 @@ export function handleCreativeEvent(data, bidResponse) {
         bid: bidResponse,
         adId: bidResponse.adId,
         intervention: data.intervention
+      });
+      break;
+    case EVENTS.PROGRAMMATIC_STRETCH:
+      emitProgrammaticStretch({
+        bid: bidResponse,
+        adId: bidResponse.adId
       });
       break;
     default:
