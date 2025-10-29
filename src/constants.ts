@@ -200,7 +200,8 @@ export const MESSAGES = {
   RESPONSE: 'Prebid Response',
   NATIVE: 'Prebid Native',
   EVENT: 'Prebid Event',
-  INTERVENTION: 'Prebid Intervention'
+  INTERVENTION: 'Prebid Intervention',
+  CREATIVE: 'Prebid Creative'
 };
 
 export const PB_LOCATOR = '__pb_locator__';

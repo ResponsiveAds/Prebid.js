@@ -11,16 +11,18 @@ import {
   getBidToRender,
   handleCreativeEvent,
   handleNativeMessage,
+  handleCreativeMessage,
   handleRender,
   markWinner
 } from './adRendering.js';
 import {getCreativeRendererSource, PUC_MIN_VERSION} from './creativeRenderers.js';
 
-const { REQUEST, RESPONSE, NATIVE, EVENT } = MESSAGES;
+const { REQUEST, RESPONSE, NATIVE, EVENT, CREATIVE } = MESSAGES;
 
 const HANDLER_MAP = {
   [REQUEST]: handleRenderRequest,
   [EVENT]: handleEventRequest,
+  [CREATIVE]: handleCreativeMessageRequest,
 };
 
 if (FEATURES.NATIVE) {
@@ -132,6 +134,17 @@ function handleEventRequest(reply, data, adObject) {
     return;
   }
   return handleCreativeEvent(data, adObject);
+}
+function handleCreativeMessageRequest(reply, data, adObject) {
+  if (adObject == null) {
+    logError(`Cannot find ad '${data.adId}' for x-origin creative message`);
+    return;
+  }
+  if (adObject.status !== BID_STATUS.RENDERED) {
+    logWarn(`Received x-origin creative message without corresponding render request for ad '${adObject.adId}'`);
+    return;
+  }
+  return handleCreativeMessage(data, adObject, {resizeFn: getResizer(data.adId, adObject)});
 }
 
 export function resizeRemoteCreative({instl, adId, adUnitCode, width, height}) {

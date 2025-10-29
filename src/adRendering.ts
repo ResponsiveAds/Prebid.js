@@ -22,10 +22,32 @@ import adapterManager from './adapterManager.js';
 import {useMetrics} from './utils/perfMetrics.js';
 import {filters} from './targeting.js';
 import {EVENT_TYPE_WIN, parseEventTrackers, TRACKER_METHOD_IMG} from './eventTrackers.js';
+import {getGlobal} from './prebidGlobal.js';
 import type {Bid} from "./bidfactory.ts";
 
 const { AD_RENDER_FAILED, AD_RENDER_SUCCEEDED, STALE_RENDER, BID_WON, EXPIRED_RENDER } = EVENTS;
 const { EXCEPTION } = AD_RENDER_FAILED_REASON;
+
+/**
+ * Get custom resizeFn from adUnit configuration
+ * @param adUnitCode - The adUnit code to look up
+ * @returns Custom resizeFn if found, null otherwise
+ */
+function getCustomResizeFn(adUnitCode: string): ((width: number, height: number, frameElement: HTMLElement, doc: Document, bid: Bid) => void) | null {
+  try {
+    const global = getGlobal();
+    const adUnits = global.adUnits || [];
+    const adUnit = adUnits.find(au => au.code === adUnitCode);
+
+    if (adUnit && typeof (adUnit as any).customResizeFn === 'function') {
+      return (adUnit as any).customResizeFn;
+    }
+  } catch (e) {
+    logWarn('Error accessing custom resizeFn from adUnits:', e);
+  }
+
+  return null;
+}
 
 declare module './events' {
   interface Events {
@@ -52,10 +74,6 @@ declare module './events' {
     [EVENTS.EXPIRED_RENDER]: [Bid];
 
     [EVENTS.BROWSER_INTERVENTION]: [BrowserInterventionData];
-    /**
-     * Fired when a creative requests programmatic stretching to full width.
-     */
-    [EVENTS.PROGRAMMATIC_STRETCH]: [ProgrammaticStretchData];
   }
 }
 
@@ -151,21 +169,6 @@ export function emitBrowserIntervention(data: BrowserInterventionData) {
   events.emit(EVENTS.BROWSER_INTERVENTION, data);
 }
 
-/**
- * Data for the PROGRAMMATIC_STRETCH event.
- */
-type ProgrammaticStretchData = {
-  bid: Bid;
-  adId: string;
-}
-
-/**
- * Emit the PROGRAMMATIC_STRETCH event.
- * This event is fired when a creative requests to be stretched to 100% width of available space.
- */
-export function emitProgrammaticStretch(data: ProgrammaticStretchData) {
-  events.emit(EVENTS.PROGRAMMATIC_STRETCH, data);
-}
 
 export function handleCreativeEvent(data, bidResponse) {
   switch (data.event) {
@@ -191,14 +194,18 @@ export function handleCreativeEvent(data, bidResponse) {
         intervention: data.intervention
       });
       break;
-    case EVENTS.PROGRAMMATIC_STRETCH:
-      emitProgrammaticStretch({
-        bid: bidResponse,
-        adId: bidResponse.adId
-      });
-      break;
     default:
       logError(`Received event request for unsupported event: '${data.event}' (adId: '${bidResponse.adId}')`);
+  }
+}
+
+export function handleCreativeMessage(data, bidResponse, deps: {resizeFn?: (width: number, height: number) => void} = {}) {
+  switch (data.action) {
+    case 'programmaticStretch':
+      deps.resizeFn(null, null);
+      break;
+    default:
+      logError(`Received creative message for unsupported action: '${data.action}' (adId: '${bidResponse.adId}')`);
   }
 }
 
@@ -213,7 +220,8 @@ export function handleNativeMessage(data, bidResponse, {resizeFn, fireTrackers =
 }
 
 const HANDLERS: any = {
-  [MESSAGES.EVENT]: handleCreativeEvent
+  [MESSAGES.EVENT]: handleCreativeEvent,
+  [MESSAGES.CREATIVE]: handleCreativeMessage
 }
 
 if (FEATURES.NATIVE) {
@@ -363,15 +371,35 @@ export function renderAdDirect(doc, adId, options) {
     emitAdRenderFail(Object.assign({id: adId, bid}, {reason, message}));
   }
   function resizeFn(width, height) {
-    const frame = doc.defaultView?.frameElement;
-    if (frame) {
-      if (width) {
-        frame.width = width;
-        frame.style.width && (frame.style.width = `${width}px`);
+    // Check if a custom resizeFn is defined for this adUnit
+    const customResizeFn = bid?.adUnitCode ? getCustomResizeFn(bid.adUnitCode) : null;
+
+    if (customResizeFn) {
+      // Use the custom resizeFn if available
+      try {
+        customResizeFn(width, height, doc.defaultView?.frameElement, doc, bid);
+      } catch (e) {
+        logWarn('Error executing custom resizeFn:', e);
+        // Fall back to default behavior if custom function fails
+        defaultResizeBehavior(width, height);
       }
-      if (height) {
-        frame.height = height;
-        frame.style.height && (frame.style.height = `${height}px`);
+    } else {
+      // Use default resize behavior
+      defaultResizeBehavior(width, height);
+    }
+
+    function defaultResizeBehavior(width, height) {
+      // RAD - we can expand the container after the bid response is received
+      const frame = doc.defaultView?.frameElement;
+      if (frame) {
+        if (width) {
+          frame.width = width;
+          frame.style.width && (frame.style.width = `${width}px`);
+        }
+        if (height) {
+          frame.height = height;
+          frame.style.height && (frame.style.height = `${height}px`);
+        }
       }
     }
   }
