@@ -22,32 +22,11 @@ import adapterManager from './adapterManager.js';
 import {useMetrics} from './utils/perfMetrics.js';
 import {filters} from './targeting.js';
 import {EVENT_TYPE_WIN, parseEventTrackers, TRACKER_METHOD_IMG} from './eventTrackers.js';
-import {getGlobal} from './prebidGlobal.js';
 import type {Bid} from "./bidfactory.ts";
 
 const { AD_RENDER_FAILED, AD_RENDER_SUCCEEDED, STALE_RENDER, BID_WON, EXPIRED_RENDER } = EVENTS;
 const { EXCEPTION } = AD_RENDER_FAILED_REASON;
 
-/**
- * Get custom resizeFn from adUnit configuration
- * @param adUnitCode - The adUnit code to look up
- * @returns Custom resizeFn if found, null otherwise
- */
-function getCustomResizeFn(adUnitCode: string): ((width: number, height: number, frameElement: HTMLElement, doc: Document, bid: Bid) => void) | null {
-  try {
-    const global = getGlobal();
-    const adUnits = global.adUnits || [];
-    const adUnit = adUnits.find(au => au.code === adUnitCode);
-
-    if (adUnit && typeof (adUnit as any).customResizeFn === 'function') {
-      return (adUnit as any).customResizeFn;
-    }
-  } catch (e) {
-    logWarn('Error accessing custom resizeFn from adUnits:', e);
-  }
-
-  return null;
-}
 
 declare module './events' {
   interface Events {
@@ -368,42 +347,22 @@ export function renderIfDeferred(bidResponse) {
 export function renderAdDirect(doc, adId, options) {
   let bid;
   function fail(reason, message) {
-    emitAdRenderFail(Object.assign({id: adId, bid}, {reason, message}));
+    emitAdRenderFail(Object.assign({ id: adId, bid }, { reason, message }));
   }
   function resizeFn(width, height) {
-    // Check if a custom resizeFn is defined for this adUnit
-    const customResizeFn = bid?.adUnitCode ? getCustomResizeFn(bid.adUnitCode) : null;
-
-    if (customResizeFn) {
-      // Use the custom resizeFn if available
-      try {
-        customResizeFn(width, height, doc.defaultView?.frameElement, doc, bid);
-      } catch (e) {
-        logWarn('Error executing custom resizeFn:', e);
-        // Fall back to default behavior if custom function fails
-        defaultResizeBehavior(width, height);
+    const frame = doc.defaultView?.frameElement;
+    if (frame) {
+      if (width) {
+        frame.width = width;
+        frame.style.width && (frame.style.width = `${width}px`);
       }
-    } else {
-      // Use default resize behavior
-      defaultResizeBehavior(width, height);
-    }
-
-    function defaultResizeBehavior(width, height) {
-      // RAD - we can expand the container after the bid response is received
-      const frame = doc.defaultView?.frameElement;
-      if (frame) {
-        if (width) {
-          frame.width = width;
-          frame.style.width && (frame.style.width = `${width}px`);
-        }
-        if (height) {
-          frame.height = height;
-          frame.style.height && (frame.style.height = `${height}px`);
-        }
+      if (height) {
+        frame.height = height;
+        frame.style.height && (frame.style.height = `${height}px`);
       }
     }
   }
-  const messageHandler = creativeMessageHandler({resizeFn});
+  const messageHandler = creativeMessageHandler({ resizeFn });
 
   function waitForDocumentReady(doc) {
     return new PbPromise<void>((resolve) => {
@@ -424,7 +383,7 @@ export function renderAdDirect(doc, adId, options) {
       mkFrame: createIframe,
     }, doc.defaultView))
       .then(
-        () => emitAdRenderSucceeded({doc, bid, id: bid.adId}),
+        () => emitAdRenderSucceeded({ doc, bid, id: bid.adId }),
         (e) => {
           fail(e?.reason || AD_RENDER_FAILED_REASON.EXCEPTION, e?.message)
           e?.stack && logError(e);
@@ -440,7 +399,7 @@ export function renderAdDirect(doc, adId, options) {
     } else {
       getBidToRender(adId).then(bidResponse => {
         bid = bidResponse;
-        handleRender({renderFn, resizeFn, adId, options: {clickUrl: options?.clickThrough}, bidResponse, doc});
+        handleRender({ renderFn, resizeFn, adId, options: { clickUrl: options?.clickThrough }, bidResponse, doc });
       });
     }
   } catch (e) {
