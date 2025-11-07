@@ -27,7 +27,6 @@ import type {Bid} from "./bidfactory.ts";
 const { AD_RENDER_FAILED, AD_RENDER_SUCCEEDED, STALE_RENDER, BID_WON, EXPIRED_RENDER } = EVENTS;
 const { EXCEPTION } = AD_RENDER_FAILED_REASON;
 
-
 declare module './events' {
   interface Events {
     /**
@@ -148,7 +147,6 @@ export function emitBrowserIntervention(data: BrowserInterventionData) {
   events.emit(EVENTS.BROWSER_INTERVENTION, data);
 }
 
-
 export function handleCreativeEvent(data, bidResponse) {
   switch (data.event) {
     case EVENTS.AD_RENDER_FAILED:
@@ -178,7 +176,7 @@ export function handleCreativeEvent(data, bidResponse) {
   }
 }
 
-export function handleCreativeMessage(data, bidResponse, deps: {resizeFn?: (width: number, height: number) => void} = {}) {
+export function handleCreativeMessage(data, bidResponse, deps: { resizeFn?: (width: number, height: number) => void } = {}) {
   switch (data.action) {
     case 'programmaticStretch':
       deps.resizeFn(null, null);
