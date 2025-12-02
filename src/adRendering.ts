@@ -3,6 +3,7 @@ import {
   createInvisibleIframe,
   inIframe,
   insertElement,
+  isFn,
   logError,
   logWarn,
   replaceMacros,
@@ -181,7 +182,13 @@ export function handleCreativeMessage(data, bidResponse, deps: { resizeFn?: (wid
     case 'programmaticStretch':
       const mediaTypes = auctionManager.index.getMediaTypes({adUnitId: bidResponse.adUnitId, requestId: bidResponse.requestId});
       if (mediaTypes?.banner?.enableProgrammaticStretch) {
-        deps.resizeFn(null, bidResponse.height);
+        const customResizeFn = mediaTypes.banner.resizeFunction;
+        if (isFn(customResizeFn)) {
+          customResizeFn(data.adId, bidResponse);
+        } else {
+          // Pass in null for width to make is 100%, and use fixed height from the bidResponse
+          deps.resizeFn(null, bidResponse.height);
+        }
       } else {
         logWarn(`Received programmaticStretch message but enableProgrammaticStretch is not enabled on the slot (adId: '${bidResponse.adId}')`);
       }

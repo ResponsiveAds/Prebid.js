@@ -16,13 +16,20 @@
         // var FAILSAFE_TIMEOUT = 3300;
         var PREBID_TIMEOUT = 1000;
 
+        var originalResizeFunction = function(adId, bidResponse) {
+            console.log('Custom resize:', adId, bidResponse.adUnitCode, bidResponse.width, bidResponse.height);
+            // Implement custom resize logic here
+        };
+
         var adUnits = [
             {
                 code: "div-gpt-ad-1460505748561-0",
                 mediaTypes: {
                     banner: {
                         sizes: [[300, 250]],
-                        enableProgrammaticStretch: true,
+                        enableProgrammaticStretch: false,
+                        // Optional: Define a custom resize function that will be called instead of the default
+                        // resizeFunction: originalResizeFunction,
                     },
                 },
 
@@ -483,7 +490,7 @@
 
     <!-- Debug Panel -->
     <div class="debug-panel" id="debug-panel">
-        <h5>⚙️ Prebid Debug Settings</h5>
+        <h5>Debug Settings</h5>
         <div class="setting-row">
             <span class="setting-label">enableProgrammaticStretch</span>
             <label class="toggle-switch">
@@ -498,10 +505,17 @@
                 <span class="toggle-slider"></span>
             </label>
         </div>
-        <div class="status" id="debug-status">
-            Stretch: <span id="stretch-status">Enabled</span> | SafeFrame: <span id="safeframe-status">Enabled</span>
+        <div class="setting-row">
+            <span class="setting-label">resizeFunction</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-resize-func" checked>
+                <span class="toggle-slider"></span>
+            </label>
         </div>
-        <button class="refresh-btn" id="refresh-ads-btn">🔄 Refresh Ads</button>
+        <div class="status" id="debug-status">
+            Stretch: <span id="stretch-status">Enabled</span> | SafeFrame: <span id="safeframe-status">Enabled</span> | ResizeFunc: <span id="resize-func-status">Enabled</span>
+        </div>
+        <button class="refresh-btn" id="refresh-ads-btn">Refresh Ads</button>
     </div>
 
     <script>
@@ -509,8 +523,10 @@
         (function() {
             var toggleStretch = document.getElementById('toggle-stretch');
             var toggleSafeframe = document.getElementById('toggle-safeframe');
+            var toggleResizeFunc = document.getElementById('toggle-resize-func');
             var stretchStatus = document.getElementById('stretch-status');
             var safeframeStatus = document.getElementById('safeframe-status');
+            var resizeFuncStatus = document.getElementById('resize-func-status');
             var refreshBtn = document.getElementById('refresh-ads-btn');
 
             // Initialize from current adUnits state
@@ -521,6 +537,11 @@
             // Initialize SafeFrame toggle from shared config
             toggleSafeframe.checked = !!debugConfig.forceSafeFrame;
             safeframeStatus.textContent = debugConfig.forceSafeFrame ? 'Enabled' : 'Disabled';
+
+            // Initialize resizeFunction toggle
+            var hasResizeFunc = !!adUnits[0].mediaTypes.banner.resizeFunction;
+            toggleResizeFunc.checked = hasResizeFunc;
+            resizeFuncStatus.textContent = hasResizeFunc ? 'Enabled' : 'Disabled';
 
             toggleStretch.addEventListener('change', function() {
                 var enabled = this.checked;
@@ -534,6 +555,17 @@
                 debugConfig.forceSafeFrame = this.checked;
                 safeframeStatus.textContent = this.checked ? 'Enabled' : 'Disabled';
                 console.log('[Debug Panel] forceSafeFrame set to:', debugConfig.forceSafeFrame);
+            });
+
+            toggleResizeFunc.addEventListener('change', function() {
+                var enabled = this.checked;
+                if (enabled) {
+                    adUnits[0].mediaTypes.banner.resizeFunction = originalResizeFunction;
+                } else {
+                    delete adUnits[0].mediaTypes.banner.resizeFunction;
+                }
+                resizeFuncStatus.textContent = enabled ? 'Enabled' : 'Disabled';
+                console.log('[Debug Panel] resizeFunction set to:', enabled ? 'custom function' : 'disabled');
             });
 
             refreshBtn.addEventListener('click', function() {

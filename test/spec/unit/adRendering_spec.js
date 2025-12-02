@@ -418,7 +418,7 @@ describe('adRendering', () => {
           }
         });
         handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
-        sinon.assert.calledWith(resizeFn, null, null);
+        sinon.assert.calledWith(resizeFn, null, undefined);
         sinon.assert.notCalled(utils.logWarn);
       });
 
@@ -469,6 +469,50 @@ describe('adRendering', () => {
         });
         handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
         sinon.assert.calledWith(getMediaTypesStub, { adUnitId: 'adunit-1', requestId: 'req-1' });
+      });
+
+      it('should call custom resizeFunction when defined on banner', () => {
+        const customResizeFn = sinon.stub();
+        bid.height = 500;
+        getMediaTypesStub.returns({
+          banner: {
+            sizes: [[300, 250]],
+            enableProgrammaticStretch: true,
+            resizeFunction: customResizeFn
+          }
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.calledOnce(customResizeFn);
+        sinon.assert.calledWith(customResizeFn, null, 500, bid);
+        sinon.assert.notCalled(resizeFn);
+      });
+
+      it('should fall back to default resizeFn when resizeFunction is not a function', () => {
+        bid.height = 400;
+        getMediaTypesStub.returns({
+          banner: {
+            sizes: [[300, 250]],
+            enableProgrammaticStretch: true,
+            resizeFunction: 'not a function'
+          }
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.calledOnce(resizeFn);
+        sinon.assert.calledWith(resizeFn, null, 400);
+      });
+
+      it('should fall back to default resizeFn when resizeFunction is undefined', () => {
+        bid.height = 300;
+        getMediaTypesStub.returns({
+          banner: {
+            sizes: [[300, 250]],
+            enableProgrammaticStretch: true,
+            resizeFunction: undefined
+          }
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.calledOnce(resizeFn);
+        sinon.assert.calledWith(resizeFn, null, 300);
       });
     });
 
