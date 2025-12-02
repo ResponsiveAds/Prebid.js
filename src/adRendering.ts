@@ -179,7 +179,12 @@ export function handleCreativeEvent(data, bidResponse) {
 export function handleCreativeMessage(data, bidResponse, deps: { resizeFn?: (width: number, height: number) => void } = {}) {
   switch (data.action) {
     case 'programmaticStretch':
-      deps.resizeFn(null, null);
+      const mediaTypes = auctionManager.index.getMediaTypes({adUnitId: bidResponse.adUnitId, requestId: bidResponse.requestId});
+      if (mediaTypes?.banner?.enableProgrammaticStretch) {
+        deps.resizeFn(null, bidResponse.height);
+      } else {
+        logWarn(`Received programmaticStretch message but enableProgrammaticStretch is not enabled on the slot (adId: '${bidResponse.adId}')`);
+      }
       break;
     default:
       logError(`Received creative message for unsupported action: '${data.action}' (adId: '${bidResponse.adId}')`);

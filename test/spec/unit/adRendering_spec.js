@@ -7,6 +7,7 @@ import {
   emitAdRenderSucceeded,
   getRenderingData,
   handleCreativeEvent,
+  handleCreativeMessage,
   handleNativeMessage,
   handleRender, markWinningBid, renderIfDeferred
 } from '../../../src/adRendering.js';
@@ -392,6 +393,91 @@ describe('adRendering', () => {
       handleCreativeEvent({event: 'unsupported'}, bid);
       sinon.assert.called(utils.logError);
       sinon.assert.notCalled(events.emit);
+    });
+  });
+
+  describe('handleCreativeMessage', () => {
+    let bid, resizeFn, getMediaTypesStub;
+
+    beforeEach(() => {
+      bid = {
+        adId: '123',
+        adUnitId: 'adunit-1',
+        requestId: 'req-1'
+      };
+      resizeFn = sinon.stub();
+      getMediaTypesStub = sandbox.stub(auctionManager.index, 'getMediaTypes');
+    });
+
+    describe('programmaticStretch action', () => {
+      it('should call resizeFn when enableProgrammaticStretch is true', () => {
+        getMediaTypesStub.returns({
+          banner: {
+            sizes: [[300, 250]],
+            enableProgrammaticStretch: true
+          }
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.calledWith(resizeFn, null, null);
+        sinon.assert.notCalled(utils.logWarn);
+      });
+
+      it('should not call resizeFn when enableProgrammaticStretch is false', () => {
+        getMediaTypesStub.returns({
+          banner: {
+            sizes: [[300, 250]],
+            enableProgrammaticStretch: false
+          }
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.notCalled(resizeFn);
+        sinon.assert.calledOnce(utils.logWarn);
+      });
+
+      it('should not call resizeFn when enableProgrammaticStretch is not set', () => {
+        getMediaTypesStub.returns({
+          banner: {
+            sizes: [[300, 250]]
+          }
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.notCalled(resizeFn);
+        sinon.assert.calledOnce(utils.logWarn);
+      });
+
+      it('should not call resizeFn when mediaTypes is undefined', () => {
+        getMediaTypesStub.returns(undefined);
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.notCalled(resizeFn);
+        sinon.assert.calledOnce(utils.logWarn);
+      });
+
+      it('should not call resizeFn when banner is undefined', () => {
+        getMediaTypesStub.returns({
+          video: {}
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.notCalled(resizeFn);
+        sinon.assert.calledOnce(utils.logWarn);
+      });
+
+      it('should look up mediaTypes using adUnitId and requestId from bid', () => {
+        getMediaTypesStub.returns({
+          banner: {
+            enableProgrammaticStretch: true
+          }
+        });
+        handleCreativeMessage({ action: 'programmaticStretch' }, bid, { resizeFn });
+        sinon.assert.calledWith(getMediaTypesStub, { adUnitId: 'adunit-1', requestId: 'req-1' });
+      });
+    });
+
+    describe('unsupported action', () => {
+      it('should log an error for unsupported actions', () => {
+        handleCreativeMessage({ action: 'unsupportedAction' }, bid, { resizeFn });
+        sinon.assert.called(utils.logError);
+        sinon.assert.notCalled(resizeFn);
+      });
     });
   });
 

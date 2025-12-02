@@ -25,6 +25,10 @@ export function fillBannerImp(imp, bidRequest, context) {
     if (bannerParams.hasOwnProperty('pos')) {
       banner.pos = bannerParams.pos;
     }
+    if (bannerParams.hasOwnProperty('enableProgrammaticStretch')) {
+      banner.ext = banner.ext || {};
+      banner.ext.enableProgrammaticStretch = bannerParams.enableProgrammaticStretch;
+    }
 
     imp.banner = mergeDeep(banner, imp.banner);
   }

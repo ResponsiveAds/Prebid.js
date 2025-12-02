@@ -127,6 +127,50 @@ describe('pbjs -> ortb banner conversion', () => {
           topframe,
         }
       }
+    },
+    {
+      t: 'banner with enableProgrammaticStretch true',
+      request: {
+        mediaTypes: {
+          banner: {
+            sizes: [1, 2],
+            enableProgrammaticStretch: true
+          }
+        }
+      },
+      imp: {
+        banner: {
+          format: [
+            {w: 1, h: 2}
+          ],
+          topframe,
+          ext: {
+            enableProgrammaticStretch: true
+          }
+        }
+      }
+    },
+    {
+      t: 'banner with enableProgrammaticStretch false',
+      request: {
+        mediaTypes: {
+          banner: {
+            sizes: [1, 2],
+            enableProgrammaticStretch: false
+          }
+        }
+      },
+      imp: {
+        banner: {
+          format: [
+            {w: 1, h: 2}
+          ],
+          topframe,
+          ext: {
+            enableProgrammaticStretch: false
+          }
+        }
+      }
     }
   ].forEach(({t, request, imp}) => {
     it(`can convert ${t}`, () => {
